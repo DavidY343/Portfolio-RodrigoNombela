@@ -1,6 +1,6 @@
 # Portfolio - Rodrigo Nombela
 
-Este es el portfolio personal de **Rodrigo Nombela**, Realizador Audiovisual y Narrador Visual. El sitio web muestra sus proyectos más recientes extraídos automáticamente de Behance, presentados con una estética premium, minimalista y cinematográfica.
+Sitio web oficial: [portfolio-rodrigo-nombela.vercel.app](https://portfolio-rodrigo-nombela.vercel.app/)
 
 ## 🚀 Características
 
