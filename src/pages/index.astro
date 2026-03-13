@@ -14,7 +14,7 @@ import VideoModal from '../components/VideoModal.astro';
 			<div class="relative mb-8 group">
 				<div class="absolute -inset-1 bg-gradient-to-r from-accent to-blue-600 rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
 				<img 
-					src={import.meta.env.BASE_URL + "rodrifoto.png"} 
+					src={`${import.meta.env.BASE_URL.replace(/\/$/, '')}/rodrifoto.png`} 
 					alt="Rodrigo Nombela" 
 					class="relative w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-2 border-white/10 shadow-2xl"
 				/>
