@@ -1,0 +1,75 @@
+---
+const { images = [] } = Astro.props;
+---
+
+<div class="relative w-full h-full overflow-hidden group/carousel h-full">
+    <div id="carousel-track" class="flex h-full transition-transform duration-500 ease-out" style="width: 100%;">
+        {images.map((img: string, index: number) => (
+            <div class="w-full flex-shrink-0 h-full flex items-center justify-center p-4">
+                <img src={img} alt={`Project image ${index + 1}`} class="max-w-full max-h-full object-contain rounded-lg shadow-2xl" />
+            </div>
+        ))}
+    </div>
+
+    {images.length > 1 && (
+        <>
+            <button id="prev-btn" class="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white opacity-0 group-hover/carousel:opacity-100 transition-opacity hover:bg-black/80">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <button id="next-btn" class="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white opacity-0 group-hover/carousel:opacity-100 transition-opacity hover:bg-black/80">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+            <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                {images.map((_: any, i: number) => (
+                    <div class="carousel-dot w-2 h-2 rounded-full bg-white/30 transition-all duration-300" data-index={i}></div>
+                ))}
+            </div>
+        </>
+    )}
+</div>
+
+<script>
+    let currentIndex = 0;
+    const track = document.getElementById('carousel-track');
+    const dots = document.querySelectorAll('.carousel-dot');
+    const imagesCount = track?.children.length ?? 0;
+
+    function updateCarousel() {
+        if (!track) return;
+        track.style.transform = `translateX(-${currentIndex * 100}%)`;
+        
+        dots.forEach((dot, i) => {
+            if (i === currentIndex) {
+                dot.classList.remove('bg-white/30', 'w-2');
+                dot.classList.add('bg-accent', 'w-6');
+            } else {
+                dot.classList.add('bg-white/30', 'w-2');
+                dot.classList.remove('bg-accent', 'w-6');
+            }
+        });
+    }
+
+    document.getElementById('prev-btn')?.addEventListener('click', () => {
+        currentIndex = (currentIndex > 0) ? currentIndex - 1 : imagesCount - 1;
+        updateCarousel();
+    });
+
+    document.getElementById('next-btn')?.addEventListener('click', () => {
+        currentIndex = (currentIndex < imagesCount - 1) ? currentIndex + 1 : 0;
+        updateCarousel();
+    });
+
+    dots.forEach(dot => {
+        dot.addEventListener('click', () => {
+            currentIndex = parseInt(dot.getAttribute('data-index') || '0');
+            updateCarousel();
+        });
+    });
+
+    // Initialize dots
+    updateCarousel();
+</script>

@@ -1,0 +1,47 @@
+---
+const { title, thumbnail, link, images = [] } = Astro.props;
+---
+
+<div 
+    class="group relative overflow-hidden rounded-xl glass aspect-video cursor-pointer transition-all duration-700 hover:scale-[1.02] hover:shadow-2xl hover:shadow-accent/20"
+    data-title={title}
+    data-images={JSON.stringify(images)}
+    data-link={link}
+>
+    <img 
+        src={thumbnail} 
+        alt={title} 
+        referrerpolicy="no-referrer"
+        class="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110 opacity-70 group-hover:opacity-100"
+    />
+    
+    <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-8">
+        <h3 class="text-xl font-bold text-white mb-3 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">{title}</h3>
+        <div class="flex items-center justify-between transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-75">
+            <span class="text-blue-400 text-xs font-medium tracking-[0.2em] uppercase">Explorar</span>
+            <div class="flex items-center gap-4">
+                {images.length > 0 && (
+                    <span class="text-white/40 text-[10px] uppercase tracking-widest">{images.length} fotos</span>
+                )}
+                <a 
+                    href={link} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    class="text-white/60 hover:text-white text-[10px] uppercase tracking-widest transition-colors border-l border-white/20 pl-4"
+                    onclick="event.stopPropagation();"
+                >
+                    Behance
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div class="w-14 h-14 rounded-full bg-white/5 backdrop-blur-xl flex items-center justify-center transform scale-0 group-hover:scale-100 transition-transform duration-500 border border-white/10 shadow-2xl">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+        </div>
+    </div>
+</div>

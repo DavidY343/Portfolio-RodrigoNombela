@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #f8fafc;
+  --color-secondary: #0f172a;
+  --color-accent: #3b82f6;
+  
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Outfit', serif;
+}
+
+:root {
+  --background: 0 0% 3.9%;
+  --foreground: 0 0% 98%;
+}
+
+body {
+  background-color: #020617;
+  color: #f8fafc;
+  font-family: var(--font-sans);
+  margin: 0;
+  padding: 0;
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.cinematic-gradient {
+  background: radial-gradient(circle at center, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+}
