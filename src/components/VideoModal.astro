@@ -1,0 +1,154 @@
+---
+---
+
+<div id="video-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/95 opacity-0 pointer-events-none transition-all duration-300">
+    <button id="close-modal" class="absolute top-6 right-6 text-white/50 hover:text-white transition-colors z-[70] p-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+    </button>
+    
+    <div class="w-full max-w-7xl h-full flex flex-col items-center justify-center">
+        <div id="modal-content" class="w-full h-full flex flex-col relative">
+            <h2 id="modal-title" class="text-xl md:text-2xl font-serif py-6 text-white text-center px-6"></h2>
+            <div id="carousel-container" class="flex-1 w-full overflow-hidden relative flex items-center justify-center">
+                <div id="loading-indicator" class="absolute inset-0 flex items-center justify-center text-white/20 uppercase tracking-[0.3em] text-xs">Cargando Galería...</div>
+                <!-- Carousel will be injected here -->
+            </div>
+            <div id="counter" class="py-6 text-white/50 text-sm font-light tracking-widest text-center"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const modal = document.getElementById('video-modal');
+    const closeBtn = document.getElementById('close-modal');
+    const container = document.getElementById('carousel-container');
+    const modalTitle = document.getElementById('modal-title');
+    const counter = document.getElementById('counter');
+    const loading = document.getElementById('loading-indicator');
+    const projectCards = document.querySelectorAll('[data-images]');
+
+    projectCards.forEach(card => {
+        card.addEventListener('click', async () => {
+            const title = card.getAttribute('data-title') || '';
+            const link = card.getAttribute('data-link') || '';
+            let images = JSON.parse(card.getAttribute('data-images') || '[]');
+            const thumbnail = card.querySelector('img')?.src || '';
+            
+            if (modalTitle) modalTitle.innerText = title;
+            if (loading) loading.style.display = 'flex';
+            
+            modal?.classList.remove('opacity-0', 'pointer-events-none');
+            document.body.style.overflow = 'hidden';
+
+            if (container) {
+                container.innerHTML = '';
+                
+                // CLIENT-SIDE FALLBACK: If build-time images are empty, try to fetch them now via our proxy
+                if (images.length === 0) {
+                    try {
+                        const baseUrl = document.querySelector('base')?.href || '/';
+                        const apiPath = baseUrl.endsWith('/') ? 'api/behance-image-proxy' : '/api/behance-image-proxy';
+                        const response = await fetch(`${baseUrl}${apiPath}?url=${encodeURIComponent(link)}`);
+                        if (response.ok) {
+                            const data = await response.json();
+                            images = data.images || [];
+                        }
+                    } catch (e) {
+                        console.error('Client-side extraction failed:', e);
+                    }
+                }
+
+                if (loading) loading.style.display = 'none';
+                
+                const finalImages = images.length > 0 ? images : [thumbnail];
+                renderCarousel(container, finalImages);
+            }
+        });
+    });
+
+    function renderCarousel(parent: HTMLElement, images: string[]) {
+        const track = document.createElement('div');
+        track.className = 'flex h-full transition-transform duration-500 ease-in-out items-center';
+        track.style.width = '100%';
+        
+        images.forEach((img, i) => {
+            const slide = document.createElement('div');
+            slide.className = 'w-full flex-shrink-0 h-full flex items-center justify-center p-4 md:p-12';
+            
+            const imageEl = document.createElement('img');
+            imageEl.src = img;
+            imageEl.referrerPolicy = "no-referrer"; 
+            imageEl.className = 'max-w-full max-h-full object-contain shadow-2xl rounded-sm';
+            
+            imageEl.onerror = () => {
+                imageEl.src = 'https://placehold.co/800x600/020617/white?text=Contenido+en+Behance';
+            };
+            
+            slide.appendChild(imageEl);
+            track.appendChild(slide);
+        });
+        
+        parent.appendChild(track);
+        
+        if (images.length > 1) {
+            let currentIndex = 0;
+            
+            const prev = document.createElement('button');
+            prev.className = 'absolute left-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/5 text-white hover:bg-white/20 transition-all z-[75] hidden md:block';
+            prev.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>';
+            
+            const next = document.createElement('button');
+            next.className = 'absolute right-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/5 text-white hover:bg-white/20 transition-all z-[75] hidden md:block';
+            next.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>';
+            
+            const update = () => {
+                track.style.transform = `translateX(-${currentIndex * 100}%)`;
+                if (counter) counter.innerText = `${currentIndex + 1} / ${images.length}`;
+            };
+            
+            prev.onclick = (e) => {
+                e.stopPropagation();
+                currentIndex = (currentIndex > 0) ? currentIndex - 1 : images.length - 1;
+                update();
+            };
+            
+            next.onclick = (e) => {
+                e.stopPropagation();
+                currentIndex = (currentIndex < images.length - 1) ? currentIndex + 1 : 0;
+                update();
+            };
+            
+            parent.appendChild(prev);
+            parent.appendChild(next);
+            update();
+
+            const keyHandler = (e: KeyboardEvent) => {
+                if (e.key === 'ArrowLeft') prev.click();
+                if (e.key === 'ArrowRight') next.click();
+                if (e.key === 'Escape') closeBtn?.click();
+            };
+            window.addEventListener('keydown', keyHandler);
+            (window as any)._modalKeyHandler = keyHandler;
+        } else {
+            if (counter) counter.innerText = "1 / 1";
+        }
+    }
+
+    closeBtn?.addEventListener('click', () => {
+        modal?.classList.add('opacity-0', 'pointer-events-none');
+        if (container) container.innerHTML = '';
+        if (counter) counter.innerText = '';
+        document.body.style.overflow = 'auto';
+        if ((window as any)._modalKeyHandler) {
+            window.removeEventListener('keydown', (window as any)._modalKeyHandler);
+        }
+    });
+
+    modal?.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeBtn?.click();
+        }
+    });
+</script>
