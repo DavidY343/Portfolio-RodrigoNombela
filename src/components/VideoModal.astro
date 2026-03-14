@@ -131,6 +131,38 @@
             };
             window.addEventListener('keydown', keyHandler);
             (window as any)._modalKeyHandler = keyHandler;
+
+            // TOUCH SUPPORT (SWIPE)
+            let touchStartX = 0;
+            let touchEndX = 0;
+
+            const handleTouchStart = (e: TouchEvent) => {
+                touchStartX = e.changedTouches[0].screenX;
+            };
+
+            const handleTouchEnd = (e: TouchEvent) => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            };
+
+            const handleSwipe = () => {
+                const swipeThreshold = 50; // pixels
+                if (touchEndX < touchStartX - swipeThreshold) {
+                    // Swiped left -> Next image
+                    next.click();
+                } else if (touchEndX > touchStartX + swipeThreshold) {
+                    // Swiped right -> Previous image
+                    prev.click();
+                }
+            };
+
+            parent.addEventListener('touchstart', handleTouchStart, { passive: true });
+            parent.addEventListener('touchend', handleTouchEnd, { passive: true });
+            
+            // Store handlers to clean up later
+            (window as any)._modalTouchStart = handleTouchStart;
+            (window as any)._modalTouchEnd = handleTouchEnd;
+            (window as any)._modalTouchParent = parent;
         } else {
             if (counter) counter.innerText = "1 / 1";
         }
@@ -143,6 +175,10 @@
         document.body.style.overflow = 'auto';
         if ((window as any)._modalKeyHandler) {
             window.removeEventListener('keydown', (window as any)._modalKeyHandler);
+        }
+        if ((window as any)._modalTouchStart && (window as any)._modalTouchParent) {
+            (window as any)._modalTouchParent.removeEventListener('touchstart', (window as any)._modalTouchStart);
+            (window as any)._modalTouchParent.removeEventListener('touchend', (window as any)._modalTouchEnd);
         }
     });
 
