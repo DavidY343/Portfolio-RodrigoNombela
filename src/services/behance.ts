@@ -111,7 +111,7 @@ function deduplicateBehanceImages(urls: string[], projectId: string = ''): strin
 
     const uniqueUrls = Array.from(imageMap.values());
     console.log(`  - Unique Content Images Found: ${uniqueUrls.length}`);
-    return uniqueUrls.slice(0, 10);
+    return uniqueUrls.slice(0, 15);
 }
 
 export async function fetchProjectImages(projectUrl: string): Promise<string[]> {
