@@ -2,79 +2,139 @@
 import Layout from '../layouts/Layout.astro';
 import ProjectGrid from '../components/ProjectGrid.astro';
 import VideoModal from '../components/VideoModal.astro';
-import ContactModal from '../components/ContactModal.astro';
+import { fetchBehanceProjects, groupProjects, CATEGORIES } from '../services/behance';
+
+const projects = await fetchBehanceProjects();
+const groupedProjects = groupProjects(projects);
+
+// Preparar los bloques de categorías para el Hero con sus imágenes representativas
+const homeCategories = CATEGORIES.filter(c => c.id !== 'otros' && groupedProjects[c.id].length > 0).map(cat => {
+	const latestProject = groupedProjects[cat.id][0];
+	// Usar la última imagen del proyecto más reciente como representativa, o el thumbnail
+	const reprImage = latestProject.images && latestProject.images.length > 0 
+		? latestProject.images[latestProject.images.length - 1] 
+		: latestProject.thumbnail;
+	
+	return {
+		...cat,
+		reprImage
+	};
+});
 ---
 
 <Layout title="Rodrigo Nombela | Fotógrafo & Videógrafo Profesional">
-	<main>
-		<!-- Hero Section -->
-		<section class="min-h-screen flex flex-col items-center justify-center text-center px-6 relative overflow-hidden">
-			<div class="absolute top-1/4 left-1/4 w-96 h-96 bg-accent/20 rounded-full blur-[120px] -z-10 animate-pulse"></div>
-			<div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-[120px] -z-10"></div>
-			
-			<div class="relative mb-8 group">
-				<div class="absolute -inset-1 bg-gradient-to-r from-accent to-blue-600 rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+	<!-- Navbar Superior -->
+	<header class="fixed top-0 left-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 transition-all duration-300">
+		<div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+			<div class="flex items-center gap-4">
 				<img 
 					src={`${import.meta.env.BASE_URL.replace(/\/$/, '')}/rodrifoto.png`} 
 					alt="Rodrigo Nombela" 
-					class="relative w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-2 border-white/10 shadow-2xl"
+					class="w-10 h-10 rounded-full object-cover grayscale border border-gray-100"
 				/>
+				<a href="#" class="text-xs font-serif tracking-[0.4em] font-light uppercase hidden sm:block">RODRIGO NOMBELA</a>
+			</div>
+			<nav class="flex gap-6 md:gap-10 text-[9px] font-light tracking-[0.3em] uppercase text-gray-400">
+				{homeCategories.map(cat => (
+					<a href={`#seccion-${cat.id}`} class="hover:text-black transition-colors">{cat.name}</a>
+				))}
+				<a href="#contacto" class="hover:text-black transition-colors">Contacto</a>
+			</nav>
+		</div>
+	</header>
+
+	<main class="pt-20">
+		<!-- New Hero Section: Categories Grid -->
+		<section class="min-h-[90vh] flex flex-col justify-center px-6 py-20 max-w-7xl mx-auto">
+			<div class="mb-24 text-center">
+				<h1 class="text-4xl md:text-6xl font-serif font-light tracking-tighter mb-6 text-black uppercase">
+					Rodrigo Nombela
+				</h1>
+				<p class="text-xs md:text-sm text-gray-400 font-light tracking-[0.4em] uppercase">
+					Fotógrafo & Videógrafo
+				</p>
 			</div>
 
-			<h1 class="text-6xl md:text-8xl font-serif font-light tracking-tighter mb-6 bg-gradient-to-b from-white to-white/40 bg-clip-text text-transparent">
-				RODRIGO NOMBELA
-			</h1>
-			<p class="text-xl md:text-2xl text-gray-400 font-light tracking-widest uppercase mb-12">
-				Fotógrafo & Videógrafo Profesional
-			</p>
-			
-			<div class="flex gap-6">
-				<a href="#proyectos" class="px-8 py-3 bg-white text-black font-bold rounded-full hover:bg-accent hover:text-white transition-all duration-300">
-					Ver Trabajo
-				</a>
-				<a href="#contact-prompt" class="px-8 py-3 glass text-white font-bold rounded-full hover:bg-white/10 transition-all duration-300">
-					Contacto
-				</a>
-			</div>
-			
-			<div class="absolute bottom-10 animate-bounce">
-				<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-				</svg>
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+				{homeCategories.map(cat => (
+					<a href={`#seccion-${cat.id}`} class="group relative aspect-[4/5] overflow-hidden bg-gray-100 border border-gray-100">
+						<img 
+							src={cat.reprImage} 
+							alt={cat.name}
+							class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-105 opacity-80 group-hover:opacity-100"
+						/>
+						<!-- Título fijo arriba -->
+						<div class="absolute inset-0 flex flex-col items-center justify-start text-center p-8 mix-blend-difference group-hover:mix-blend-normal pointer-events-none">
+							<h2 class="text-white text-xs tracking-[0.5em] uppercase font-light mt-4 group-hover:scale-110 transition-transform duration-500">{cat.name}</h2>
+						</div>
+
+						<!-- Descripción que sube desde abajo sobre fondo claro -->
+						<div class="absolute inset-x-0 bottom-0 p-8 translate-y-full group-hover:translate-y-0 transition-transform duration-500 bg-white/90 backdrop-blur-sm border-t border-gray-100 flex items-center justify-center text-center">
+							<p class="text-black text-[9px] tracking-[0.2em] font-medium uppercase max-w-[200px]">
+								{cat.description}
+							</p>
+						</div>
+					</a>
+				))}
 			</div>
 		</section>
 
-		<div id="proyectos">
-			<ProjectGrid />
+		<div id="proyectos" class="scroll-mt-20">
+			<ProjectGrid projects={projects} />
 		</div>
 
-		<VideoModal />
-		<ContactModal />
-		
-		<footer class="py-20 text-center border-t border-white/5 mt-20">
-			<div class="max-w-4xl mx-auto px-6 mb-12 grid grid-cols-1 md:grid-cols-3 gap-8 text-gray-400">
-				<div>
-					<p class="text-xs uppercase tracking-widest text-white/20 mb-3">Email</p>
-					<a href="mailto:rodrigoneptuno@gmail.com" class="hover:text-white transition-colors">rodrigoneptuno@gmail.com</a>
+		<!-- Sección de Contacto -->
+		<section id="contacto" class="py-32 bg-gray-50 border-t border-gray-100 scroll-mt-20">
+			<div class="max-w-4xl mx-auto px-6 text-center">
+				<h2 class="text-3xl font-serif font-light mb-16 text-black italic">
+					Hablemos de tu próximo proyecto
+				</h2>
+				
+				<div class="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
+					<div class="group">
+						<p class="text-[10px] uppercase tracking-[0.3em] text-gray-400 mb-2">Teléfono</p>
+						<a href="tel:+34619919505" class="text-xl text-black hover:text-gray-500 transition-colors duration-300 font-light">
+							619 919 505
+						</a>
+					</div>
+					
+					<div class="group">
+						<p class="text-[10px] uppercase tracking-[0.3em] text-gray-400 mb-2">Email</p>
+						<a href="mailto:rodrigoneptuno@gmail.com" class="text-xl text-black hover:text-gray-500 transition-colors duration-300 font-light break-all">
+							rodrigoneptuno@gmail.com
+						</a>
+					</div>
+					
+					<div>
+						<p class="text-[10px] uppercase tracking-[0.3em] text-gray-400 mb-2">Ubicación</p>
+						<p class="text-lg text-black font-light">Madrid, España</p>
+					</div>
 				</div>
-				<div>
-					<p class="text-xs uppercase tracking-widest text-white/20 mb-3">Teléfono</p>
-					<p>619 919 505</p>
-				</div>
-				<div>
-					<p class="text-xs uppercase tracking-widest text-white/20 mb-3">Ubicación</p>
-					<p>Madrid</p>
+				
+				<div class="h-px bg-gray-200 w-24 mx-auto my-16"></div>
+				
+				<!-- Socials -->
+				<div class="flex justify-center gap-10">
+					<!-- Social SVGs keep same -->
+					<a href="https://www.linkedin.com/in/rodrigo-nombela-dominguez-b174aa143/" target="_blank" class="text-gray-400 hover:text-black transition-all">
+						<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+					</a>
+					<a href="https://www.instagram.com/r.nombela21" target="_blank" class="text-gray-400 hover:text-black transition-all">
+						<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.791-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.209-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+					</a>
+					<a href="https://www.behance.net/rodrigodomnguez6" target="_blank" class="text-gray-400 hover:text-black transition-all">
+						<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M22 7h-7v-2h7v2zm1.726 10c-.442 1.297-2.029 3-5.101 3-3.074 0-5.564-1.729-5.564-5.675 0-3.91 2.325-5.92 5.466-5.92 3.082 0 4.964 1.782 5.375 4.426.078.506.109 1.188.095 2.14h-8.027c.13 3.211 3.483 3.312 4.588 2.029h3.168zm-7.686-4h4.965c-.105-1.547-1.136-2.209-2.477-2.209-1.474 0-2.384.705-2.488 2.209zm-16.04 4.286h4.357c3.314 0 4.392-1.099 4.392-2.928 0-1.365-.796-2.463-2.024-2.825 1.091-.417 1.797-1.378 1.797-2.613 0-2.382-1.776-3.136-4.004-3.136h-4.518v11.502zm3.111-6.602h1.168c1.341 0 1.416 1.109 1.416 1.54 0 1.248-.485 1.488-1.579 1.488h-1.005v-3.028zm0-4.01h1.001c.712 0 1.636.002 1.636 1.442 0 .976-.554 1.24-1.188 1.342h-1.449v-2.784z"/></svg>
+					</a>
 				</div>
 			</div>
+		</section>
 
-			<p class="text-gray-500 text-sm tracking-widest uppercase">
-				&copy; {new Date().getFullYear()} Rodrigo Nombela. Todos los derechos reservados.
-			</p>
-			<div class="mt-8 flex justify-center gap-8 text-gray-400">
-				<a href="https://www.behance.net/rodrigodomnguez6" target="_blank" class="hover:text-white transition-colors">Behance</a>
-				<a href="https://www.linkedin.com/in/rodrigo-nombela-dominguez-b174aa143/" target="_blank" class="hover:text-white transition-colors">LinkedIn</a>
-				<a href="https://www.instagram.com/r.nombela21" target="_blank" class="hover:text-white transition-colors">Instagram</a>
-			</div>
+		<VideoModal />
+		
+		<footer class="py-12 text-center text-sm tracking-widest uppercase text-gray-400">
+			<p>&copy; {new Date().getFullYear()} {CATEGORIES.find(c => c.id === 'otros')?.name === "Otros" ? "Rodrigo Nombela" : "Rodrigo Nombela"}. Todos los derechos reservados.</p>
 		</footer>
 	</main>
 </Layout>
+
+
