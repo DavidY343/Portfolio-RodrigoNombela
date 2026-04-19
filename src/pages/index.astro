@@ -7,8 +7,8 @@ import { fetchBehanceProjects, groupProjects, CATEGORIES } from '../services/beh
 const projects = await fetchBehanceProjects();
 const groupedProjects = groupProjects(projects);
 
-// Preparar los bloques de categorías para el Hero con sus imágenes representativas
-const homeCategories = CATEGORIES.filter(c => c.id !== 'otros' && groupedProjects[c.id].length > 0).map(cat => {
+// Preparar las categorías para el Navbar y el Hero
+const homeCategories = CATEGORIES.filter(c => groupedProjects[c.id].length > 0).map(cat => {
 	const latestProject = groupedProjects[cat.id][0];
 	// Usar la última imagen del proyecto más reciente como representativa, o el thumbnail
 	const reprImage = latestProject.images && latestProject.images.length > 0 
@@ -55,7 +55,7 @@ const homeCategories = CATEGORIES.filter(c => c.id !== 'otros' && groupedProject
 				</p>
 			</div>
 
-			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 				{homeCategories.map(cat => (
 					<a href={`#seccion-${cat.id}`} class="group relative aspect-[4/5] overflow-hidden bg-gray-100 border border-gray-100">
 						<img 
