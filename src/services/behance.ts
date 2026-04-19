@@ -267,6 +267,7 @@ export interface Category {
 
 export const CATEGORIES: Category[] = [
     { id: 'conciertos', name: 'Conciertos', description: 'Energía y alma en directo.', regex: /conciertos?/i },
+    { id: 'eventos', name: 'Eventos', description: 'Momentos únicos y celebraciones especiales.', regex: /eventos?/i },
     { id: 'deporte', name: 'Deporte', description: 'Precisión y dinamismo en acción.', regex: /deporte|f[úu]tbol/i },
     { id: 'sesiones', name: 'Sesiones', description: 'Enfoque editorial y artístico.', regex: /sesi[oó]n/i },
     { id: 'paisaje', name: 'Paisaje', description: 'Belleza natural en detalle.', regex: /paisajes?/i },
@@ -274,21 +275,21 @@ export const CATEGORIES: Category[] = [
 ];
 
 export function groupProjects(projects: BehanceProject[]) {
-    const grouped: Record<string, BehanceProject[]> = {
-        conciertos: [],
-        deporte: [],
-        sesiones: [],
-        paisaje: [],
-        otros: [],
-    };
+    const grouped: Record<string, BehanceProject[]> = {};
+    
+    CATEGORIES.forEach(cat => {
+        grouped[cat.id] = [];
+    });
 
     projects.forEach(p => {
         const title = p.title.toLowerCase();
-        if (CATEGORIES[0].regex.test(title)) grouped.conciertos.push(p);
-        else if (CATEGORIES[1].regex.test(title)) grouped.deporte.push(p);
-        else if (CATEGORIES[2].regex.test(title)) grouped.sesiones.push(p);
-        else if (CATEGORIES[3].regex.test(title)) grouped.paisaje.push(p);
-        else grouped.otros.push(p);
+        const matchedCategory = CATEGORIES.find(c => c.id !== 'otros' && c.regex.test(title));
+        
+        if (matchedCategory) {
+            grouped[matchedCategory.id].push(p);
+        } else {
+            grouped.otros.push(p);
+        }
     });
 
     return grouped;
